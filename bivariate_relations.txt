@@ -1,0 +1,85 @@
+######## PODOBNE ATRIBUTY (CHCEME SA ICH ALTERNATIV ASI ZBAVIT) ######## 
+
+- age vs date_of_birth - datum je uplne useless. pokial vsak nevieme age, da sa 
+			vypocitat na zaklade datumu
+
+- marital-status vs relationships - nejak sa v tom nevyznam, no vsetko je na to iste
+					kopito
+
+- occupation vs workclass - occupation ma vela kategorii, co nie je vyhra. lepsie je mat
+				menej pocetne kategorie - lepsie pre model
+
+- education vs education_num - potrebujeme zistit, ci education_num znamena dosiahnute
+				vzdelanie, kedy vacsie cislo je lepsie
+				- potom by sme nemuseli pouzivat education, ale rovno
+				to cislo education_num
+
+
+My sa budeme snazit pomocou tychto bivariate analyz najst nejake vacsie grupy, do
+ktorych to budeme vediet zabalit (prikladom je napr. to occupation a workclass)
+
+
+
+
+######## VYHODENE ATRIBUTY ######## 
+
+- name - useless
+- capital-gain a capital-loss - 90% hodnot su len 0 
+
+
+
+
+######## NEVIEM, CO S TYM ######## 
+
+- fnlwgt - final weight - neviem poriadne, co to je, mozes skusit sa s tym atributom 
+				pohrat
+
+
+
+
+
+######## ######## ######## ######## ######## ######## ######## ######## 
+######## ######## ######## VZTAHY NA ANALYZU ######## ######## ######## 
+######## ######## ######## ######## ######## ######## ######## ######## 
+
+
+
+######## TVOJE NA ANALYZU: ######## 
+
+- address - income -> velke mesto = vacsi plat?
+- race - income -> cierny zarabaju menej?
+- race - hours-per-week -> cierny viac pracuju?
+- race - workclass -> maju podradnejsie prace? (som velky optimitsa :D )
+- age - pregnant
+- age - income
+- pregnant - glucose_mean
+- pregnant - oxygen_mean
+- education - education_num 
+	- teraz E/EN bude reprezentovat education/education_num
+- E/EN - workclass
+- E/EN - income
+- income - occupation
+- income - workclass
+
+
+
+
+
+
+######## MOJE NA ANALYZU: ######## 
+
+- age - glucose_mean -> cim starsi, tym viac cukru v krvi?
+- age - oxygen_mean -> cim starsi, tym viac kyslika v krvi?
+- sex - glucose_mean -> to iste, lenze pre pohlavie
+- sex - oxygen_mean
+- sex - workclass
+- sex - hours-per-week
+- sex - income
+- marital-status - relationship
+- hours-per-week - income
+- hours-per-week - workclass
+
+- ja este pohladam korelaciu pre fnlwgt
+
+- este spravim pairplot a heatmapu korelacii pre vsetkych 8 atributov okolo merani
+
