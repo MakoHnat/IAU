@@ -4,19 +4,22 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import scipy.stats as stats
 
-
+#wrapper na funkciu, ktora zvacsi plot
 def f(figsize):
     if figsize is not None:
         plt.figure(figsize=figsize)
 
 
+########################## ANALYZA JEDNEHO ATRIBUTU ##########################
+
+#vrati pocetnost jednotlivych kategorii a podla cls - countplot (nieco ako barplot)
 def univariate_categ_to_class(data, categ_attr, cls="class", figsize=None):
     print(data[categ_attr].value_counts())
 
     f(figsize)
     sns.countplot(data=data, y=categ_attr, hue=cls)
 
-
+#vlastnosti distribucie + boxplot + distplot
 def univariate_num(data, num_attr, figsize=None):
     print(data[num_attr].describe())
 
@@ -42,7 +45,8 @@ def univariate_num(data, num_attr, figsize=None):
     plt.legend()
     plt.show()
 
-
+#vrati vztah medzi atributom a cls - korelacia + violinplot + distplot + regplot (vrati logisticku regresiu,
+#pokial je tam dostatocne velka korelacia)
 def univariate_num_to_class(data, num_attr, cls="class", threshold=0.4, figsize=None):
     corr = data[[num_attr, cls]].corr().iloc[0, 1]
     print("Korelacia medzi nasim atributom a y:", corr)
@@ -64,7 +68,9 @@ def univariate_num_to_class(data, num_attr, cls="class", threshold=0.4, figsize=
         sns.regplot(data=data, x=num_attr, y=cls, logistic=True)
         plt.show()
 
-
+#vrati podiel daneho atributu podla cls
+#konkretne pre tieto default values to vrati podiel reprezentujuci pocet cukrovkarou s jednotlivych
+#hodnot daneho atributu attr
 def get_percent_of_class_in_attr(data, attr, class_col="class", class_value=1):
     left = data[attr].value_counts().to_frame()
     right = data[data[class_col] == class_value][attr].value_counts().to_frame()
@@ -80,6 +86,9 @@ def get_percent_of_class_in_attr(data, attr, class_col="class", class_value=1):
     return (joined[rightname] / joined[leftname]).sort_values(ascending=False)
 
 
+########################## PAROVA ANALYZA ##########################
+
+#medzi 2 ciselnymi atributmi - korelacia + scatterplot + regplot (if necessary)
 def bivar_2nums(data, x, y, hue="class", figsize=None):
     clean = data.loc[(data[x].notna()) & (data[y].notna())]
 
@@ -99,6 +108,8 @@ def bivar_2nums(data, x, y, hue="class", figsize=None):
         plt.show()
 
 
+#medzi 2 kategorickymi atributmi - vytvori sa pocetnostna tabulka, ktora sluzi na vytvorenie heatmapy
+#mozeme taktiez zobrazit countplot - vhodne, ked je malo, 2-3 hodnoty z jedneho atributu
 def bivar_2cats(data, x, y, show_hue=False, hue="class", countplot=False, figsize=None):
     if show_hue == False:
 
@@ -120,6 +131,7 @@ def bivar_2cats(data, x, y, show_hue=False, hue="class", countplot=False, figsiz
         plt.show()
 
 
+#medzi jednym ciselnym a jednym kategorickym atributom - boxplot + violinplot + distplot
 def bivar_numcat(data, num, cat, hue="class", distplot=False, figsize=None):
     f(figsize)
     sns.boxplot(data=data, x=cat, y=num)
