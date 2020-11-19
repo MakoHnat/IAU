@@ -153,3 +153,27 @@ def bivar_numcat(data, num, cat, hue="class", distplot=False, figsize=None):
 
         plt.legend()
         plt.show()
+        
+        
+def heatmap_mask(data, threshold=0.4):
+    data = data.copy()
+    
+    for i in data.index:
+        clean = False
+        row = data.loc[i]
+        for c in data.columns:
+            if i == c:
+                clean = True
+                
+            if clean == True:
+                row[c] = 1
+                
+            else:
+                val = row[c]
+                if val == 1 or val < threshold and val > -threshold:
+                    row[c] = 1
+                else:
+                    row[c] = 0
+
+    data = data.astype("bool")
+    return data
