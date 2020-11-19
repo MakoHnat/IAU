@@ -12,12 +12,12 @@ def f(figsize):
 
 ########################## ANALYZA JEDNEHO ATRIBUTU ##########################
 
-#vrati pocetnost jednotlivych kategorii a podla cls - countplot (nieco ako barplot)
-def univariate_categ_to_class(data, categ_attr, cls="class", figsize=None):
+#vrati pocetnost jednotlivych kategorii a podla clz - countplot (nieco ako barplot)
+def univariate_categ_to_class(data, categ_attr, clz="class", figsize=None):
     print(data[categ_attr].value_counts())
 
     f(figsize)
-    sns.countplot(data=data, y=categ_attr, hue=cls)
+    sns.countplot(data=data, y=categ_attr, hue=clz)
 
 #vlastnosti distribucie + boxplot + distplot
 def univariate_num(data, num_attr, figsize=None):
@@ -45,30 +45,30 @@ def univariate_num(data, num_attr, figsize=None):
     plt.legend()
     plt.show()
 
-#vrati vztah medzi atributom a cls - korelacia + violinplot + distplot + regplot (vrati logisticku regresiu,
+#vrati vztah medzi atributom a clz - korelacia + violinplot + distplot + regplot (vrati logisticku regresiu,
 #pokial je tam dostatocne velka korelacia)
-def univariate_num_to_class(data, num_attr, cls="class", threshold=0.4, figsize=None):
-    corr = data[[num_attr, cls]].corr().iloc[0, 1]
+def univariate_num_to_class(data, num_attr, clz="class", threshold=0.4, figsize=None, show_regplot=True):
+    corr = data[[num_attr, clz]].corr().iloc[0, 1]
     print("Korelacia medzi nasim atributom a y:", corr)
 
     f(figsize)
 
-    sns.violinplot(data=data, y=num_attr, x=cls)
+    sns.violinplot(data=data, y=num_attr, x=clz)
     plt.show()
 
     f(figsize)
 
-    sns.distplot(data[data[cls] == 0][num_attr], bins=20, label=cls + "0")
-    sns.distplot(data[data[cls] == 1][num_attr], bins=20, label=cls + "1")
+    sns.distplot(data[data[clz] == 0][num_attr], bins=20, label=clz + "0")
+    sns.distplot(data[data[clz] == 1][num_attr], bins=20, label=clz + "1")
     plt.legend()
     plt.show()
 
-    if corr > threshold or corr < -threshold:
+    if (corr > threshold or corr < -threshold) and show_regplot == True:
         f(figsize)
-        sns.regplot(data=data, x=num_attr, y=cls, logistic=True)
+        sns.regplot(data=data, x=num_attr, y=clz, logistic=True)
         plt.show()
 
-#vrati podiel daneho atributu podla cls
+#vrati podiel daneho atributu podla clz
 #konkretne pre tieto default values to vrati podiel reprezentujuci pocet cukrovkarou s jednotlivych
 #hodnot daneho atributu attr
 def get_percent_of_class_in_attr(data, attr, class_col="class", class_value=1):
@@ -89,7 +89,7 @@ def get_percent_of_class_in_attr(data, attr, class_col="class", class_value=1):
 ########################## PAROVA ANALYZA ##########################
 
 #medzi 2 ciselnymi atributmi - korelacia + scatterplot + regplot (if necessary)
-def bivar_2nums(data, x, y, hue="class", figsize=None):
+def bivar_2nums(data, x, y, hue="class", figsize=None, show_regplot=True):
     clean = data.loc[(data[x].notna()) & (data[y].notna())]
 
     cor = stats.pearsonr(clean[x], clean[y])[0]
@@ -99,7 +99,7 @@ def bivar_2nums(data, x, y, hue="class", figsize=None):
     sns.scatterplot(data=data, x=x, y=y, hue="class")
     plt.show()
 
-    if cor >= 0.7 or cor <= -0.7:
+    if (cor >= 0.7 or cor <= -0.7) and show_regplot == True:
         regress = stats.linregress(clean[x], clean[y])
         print(regress)
 
