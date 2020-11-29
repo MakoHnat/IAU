@@ -228,6 +228,12 @@ def remove_useless_features(X):
 
 def add_oxygen_features(X):
     X = X.copy()
+    
+    X["mean_oxygen"] = 0
+    X["std_oxygen"] = 0
+    X["skewness_oxygen"] = 0
+    X["kurtosis_oxygen"] = 0
+    
     X = X.apply(get_oxygen_stats, axis=1)
     return X.drop(columns=["medical_info"])
 
@@ -645,10 +651,10 @@ class Return_X_y(base.BaseEstimator, base.ClassifierMixin):
     def predict(self, X, y=None):
         
         if y is None:
-            return X
+            return X.reset_index(drop=True)
         
         y = y.values
-        return X,y
+        return X.reset_index(drop=True), y
 
 
 # Vytvaram nazvy pre stlpce, ktore bude mat dataframe, ktory pipeline vracia
@@ -692,3 +698,12 @@ def get_preprocessing_pipeline():
     ])
     
     return MAIN_PIPELINE
+
+
+#tuto funckiu pouzijeme na ziskanie pipeline krokov, okrem posledneho, ktore nasledne vlozime 
+#do dalsieho pipelinu
+#imblearn nepodporuje vnaranie pipelinov, tak to treba spravit takto komplikovane
+def get_preprocessing_steps():
+    
+    pipe = get_preprocessing_pipeline()
+    return pipe.steps[:-1]
