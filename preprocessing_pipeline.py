@@ -496,6 +496,15 @@ impute_col_transf = compose.ColumnTransformer(transformers=[
     ("age_impute", KeepDataFrame(impute.SimpleImputer()), ["age"])
 ])
 
+#tento column transformer sa bude pouzivat v pripade, kedy chceme pouzit v ramci celeho datasetu cisto len simpleimputer
+most_freq_attr = ["sex"] + edu_attr + work_attr + vztahy_attr
+mean_attr = ["age"] + oxygen_attr + glucose_attr
+
+simple_impute_col_transf = compose.ColumnTransformer(transformers=[
+    ("simple_impute_cat", KeepDataFrame(impute.SimpleImputer(strategy="most_frequent")), most_freq_attr),
+    ("simple_impute_num", KeepDataFrame(impute.SimpleImputer()), mean_attr)
+])
+
 
 #sluzi na vratenie casti datasetu, ktory je outliermi
 def identify_outliers(a):
@@ -669,28 +678,58 @@ for col, pocet in zip(onehot_attr, pocet_values):
 custom_cols_names += ordinal_attr
 custom_cols_names
 
-def get_preprocessing_pipeline():
+def get_preprocessing_pipeline(simple_impute=False):
 
-    MAIN_PIPELINE = imblearn.pipeline.Pipeline(steps=[
-        #prvotne preprocessing stepy
-        ("feature_removal", preprocessing.FunctionTransformer(remove_useless_features)),
-        ("add_oxygen_attr", preprocessing.FunctionTransformer(add_oxygen_features)),
-        ("mean_glucose_to_num", preprocessing.FunctionTransformer(repair_mean_glucose)),
-        ("string_formatting", preprocessing.FunctionTransformer(string_wrap_formatting)),
-        ("bucket_cat_attr", preprocessing.FunctionTransformer(bucket_cat_attr)),
+    if simple_impute == False:
+    
+        MAIN_PIPELINE = imblearn.pipeline.Pipeline(steps=[
+            #prvotne preprocessing stepy
+            ("feature_removal", preprocessing.FunctionTransformer(remove_useless_features)),
+            ("add_oxygen_attr", preprocessing.FunctionTransformer(add_oxygen_features)),
+            ("mean_glucose_to_num", preprocessing.FunctionTransformer(repair_mean_glucose)),
+            ("string_formatting", preprocessing.FunctionTransformer(string_wrap_formatting)),
+            ("bucket_cat_attr", preprocessing.FunctionTransformer(bucket_cat_attr)),
 
-        #imputacia
-        ("imputation_stage",  WrapColumnTransformer(impute_col_transf)),
+            #imputacia
+            ("imputation_stage",  WrapColumnTransformer(impute_col_transf)),
 
-        #non-linear transformacie
-        ("non_linear_transform", WrapColumnTransformer(non_linear_transf)),
+            #non-linear transformacie
+            ("non_linear_transform", WrapColumnTransformer(non_linear_transf)),
 
-        #resampling - outlier removal
-        ("outlier_removal", OutlierRemoval(outlier_columns)),
+            #resampling - outlier removal
+            ("outlier_removal", OutlierRemoval(outlier_columns)),
 
-        #scaling and encoding - tu uz nechceme, aby si wrapper okolo ColumnTransformer pamatal nazvy stlpcov, kedze ich tam bude ovela viac
-        #kvoli OneHot encodingu; avsak si stale chceme pamatat index
-        ("scaling_n_encoding_stage", WrapColumnTransformer(last_col_transf, keep_original_cols=False, custom_cols_names=custom_cols_names)),
+            #scaling and encoding - tu uz nechceme, aby si wrapper okolo ColumnTransformer pamatal nazvy stlpcov, kedze ich tam bude ovela viac
+            #kvoli OneHot encodingu; avsak si stale chceme pamatat index
+            ("scaling_n_encoding_stage", WrapColumnTransformer(last_col_transf, keep_original_cols=False, custom_cols_names=custom_cols_names)),
+
+        #vratenie datasetu po aplikovani krokov tohto pipelinu
+        ("return_X_y", Return_X_y())
+
+    ])
+        
+    else:
+        
+        MAIN_PIPELINE = imblearn.pipeline.Pipeline(steps=[
+            #prvotne preprocessing stepy
+            ("feature_removal", preprocessing.FunctionTransformer(remove_useless_features)),
+            ("add_oxygen_attr", preprocessing.FunctionTransformer(add_oxygen_features)),
+            ("mean_glucose_to_num", preprocessing.FunctionTransformer(repair_mean_glucose)),
+            ("string_formatting", preprocessing.FunctionTransformer(string_wrap_formatting)),
+            ("bucket_cat_attr", preprocessing.FunctionTransformer(bucket_cat_attr)),
+
+            #imputacia
+            ("imputation_stage",  WrapColumnTransformer(simple_impute_col_transf)),
+
+            #non-linear transformacie
+            ("non_linear_transform", WrapColumnTransformer(non_linear_transf)),
+
+            #resampling - outlier removal
+            ("outlier_removal", OutlierRemoval(outlier_columns)),
+
+            #scaling and encoding - tu uz nechceme, aby si wrapper okolo ColumnTransformer pamatal nazvy stlpcov, kedze ich tam bude ovela viac
+            #kvoli OneHot encodingu; avsak si stale chceme pamatat index
+            ("scaling_n_encoding_stage", WrapColumnTransformer(last_col_transf, keep_original_cols=False, custom_cols_names=custom_cols_names)),
 
         #vratenie datasetu po aplikovani krokov tohto pipelinu
         ("return_X_y", Return_X_y())
@@ -703,7 +742,7 @@ def get_preprocessing_pipeline():
 #tuto funckiu pouzijeme na ziskanie pipeline krokov, okrem posledneho, ktore nasledne vlozime 
 #do dalsieho pipelinu
 #imblearn nepodporuje vnaranie pipelinov, tak to treba spravit takto komplikovane
-def get_preprocessing_steps():
+def get_preprocessing_steps(simple_impute=False):
     
-    pipe = get_preprocessing_pipeline()
+    pipe = get_preprocessing_pipeline(simple_impute)
     return pipe.steps[:-1]
