@@ -343,7 +343,18 @@ class KeepDataFrame(base.BaseEstimator, base.TransformerMixin):
     def fit(self, X, y=None):
         
         if self.transformation is not None:
-            self.transformation.fit(X)
+            
+            if isinstance(self.transformation, impute.IterativeImputer):
+            
+                try:
+                    self.transformation.fit(X)
+                except (ValueError, np.linalg.LinAlgError):
+                    self.transformation.fit(X)
+            
+            else:
+                self.transformation.fit(X)
+            
+            
         return self
     
     def transform(self, X):
